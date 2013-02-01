@@ -1,3 +1,59 @@
+// ==UserScript==
+// @name           Simple Ikariam Town Resources MOD
+// @namespace      http://userscripts.org/users/465257
+// @grant          GM_getValue
+// @grant          GM_setValue
+// @grant          GM_addStyle
+// @grant          GM_registerMenuCommand
+// @grant          GM_deleteValue
+// @grant          GM_xmlhttpRequest
+// @grant          GM_openInTab
+// @downloadURL    https://userscripts.org/scripts/source/132578.user.js
+// @updateURL      http://userscripts.org/scripts/source/132578.meta.js
+// @include        http://s*.ikariam.*/index.php*
+// @exclude        http://board.*.ikariam.com*
+// @exclude        http://*.ikariam.*/board
+// @version        1.208
+//
+// @require        http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js
+// @require        http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/jquery-ui.min.js
+// @require        https://raw.github.com/Craga89/qTip2/5b4b7865986d2591ea2847b2668b843a41eb4cf8/dist/jquery.qtip.js
+//
+// @history        1.208MOD apply Updates to 1.2.8
+// @history        1.207MOD 0.5.3.2 Fix City switch
+// @history        1.207MOD Highlight upgrading buildings red and uprgadable buildings in upgrading citys blue
+// @history        1.207MOD fixed satisfaction calculation
+// @history        1.207 fixed satisfaction smiley images
+// @history        1.207 fixed tavern satisfaction sometimes being unable to locate valid wine level
+// @history        1.207 added extra building spot for pirate Fortress as well as building and research (missing build time args)
+// @history        1.207 fixed type error parsing museum level
+// @history        1.207 added dynamic finances (income only)
+// @history        1.207 added dynamic population projection
+// @history        1.207 fixed tab navigaton (shift+1/2/3) error
+// @history        1.207 fixed fleet loading status (tooltip) and times (parse)
+// @history        1.206 fixed resource capacities
+// @history        1.206 added dynamic expandable tooltips, and created a new expandable capacity tip
+// @history        1.206 changed the progressbar tooltips
+// @history        1.206 fixed fatal error after clicking a building upgrade
+// @history        1.205 forced a full building table refresh if encountering a new building type
+// @history        1.205 made buildings available upgrade status dynamic
+// @history        1.205 fixed more issues with deployment in other cities
+// @history        1.204 fixed issues surrounding navigating to none owned cities. Remove not owned cities from board
+// @history        1.204 fixed transport buttons and stopped them working in allied cities
+// @history        1.204 fixed transport tooltips showing for non relevant resource
+// @history        1.204 fixed settings icon border (chrome)
+// @history        1.204 changed display on city empty spots
+// @history        1.204 fixed theocracy satisfaction bug
+// @history        1.204 fixed not always remembering the active tab
+// @history        1.203 fixed not testing for existance of VINEYARD before getting level
+// @history        1.202 scope issue breaking table updates
+// @history        1.202 fixed data wipes on invalid pages
+// @history        1.202 fixed transport form submission
+// @history        1.202 jQUI tabs fatal error
+// @history        1.202 fixed a few issues causing problems using require for jQUI
+// @history        1.201 stopped hotkeys from functioning in textarea and select
+// @history        1.201 added jquery noConflict fix for greasemonkey
+// ==/UserScript==
 
 /***********************************************************************************************************************
  * Includes
@@ -192,7 +248,7 @@ var Utils = {
  * SITR
  **********************************************************************************************************************/
 var SITR = {
-    version:1.207,
+    version:1.208,
     scriptId:132578,
     scriptName:'Simple Ikariam Town Resources Board',
     logger:null,
@@ -628,7 +684,7 @@ var render = {
         this.AttachClickHandlers();
     },
     getResourceTable:function () {
-        var header = '<thead>\n<tr class="header_row" style="height:25px;">\n    <th class="city_name" colspan=2>{0}</th>\n    <th class="sitrap" style="background: url(skin/resources/icon_actionpoints.png) no-repeat \n    center right;" sitr_tip="{1}"></th>\n    <th class="actions"></th>\n    <th class="lf">{2}</th>\n    <th class="lfdash"\n        style="background: url(skin/smilies/happy.png) no-repeat center center;background-size: 20px 20px"></th>\n    <th class="lfdash"\n        style="background: url(skin/icons/growth_positive.png) no-repeat center center;background-size: 20px 20px"></th>\n    <th class="research_header lf" sitr_tip="{3}">\n        <img id="" width="14" height="21" src="skin/layout/bulb-on.png"></th>\n    <th class="lf"><img alt="" sitr_tip="{4}" src="skin/resources/icon_gold.png"></th>\n    <th class="wood_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_wood.png) no-repeat center center;" sitr_tip="{5}"></th>\n    <th class="wine_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_wine.png) no-repeat center center;" sitr_tip="{6}"></th>\n    <th class="marble_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_marble.png) no-repeat center center;" sitr_tip="{7}"></th>\n    <th class="glass_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_glass.png) no-repeat center center;" sitr_tip="{8}"></th>\n    <th class="sulfur_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_sulfur.png) no-repeat center center;" sitr_tip="{9}"></th>\n</tr>\n</thead>';
+        var header = '<thead>\n<tr class="header_row" style="height:25px;">\n    <th class="city_name" colspan=2>{0}</th>\n    <th class="sitrap" style="background: url(skin/resources/icon_actionpoints.png) no-repeat \n    center right;" sitr_tip="{1}"></th>\n    <th class="actions"></th>\n    <th class="lf">{2}</th>\n    <th class="lfdash"\n        style="background: url(skin/smilies/happy.png) no-repeat center center;background-size: 20px 20px"></th>\n    <th class="lfdash"\n        style="background: url(skin/icons/growth_positive.png) no-repeat center center;background-size: 20px 20px"></th>\n    <th class="research_header lf" sitr_tip="{3}">\n        <img id="" width="14" height="21" src="skin/layout/bulb-on.png"></th>\n    <th class="lf"><img alt="" sitr_tip="{4}" src="skin/resources/icon_gold.png"></th>\n    <th class="wood_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_wood.png) no-repeat center center;" sitr_tip="{5}"></th>\n    <th class="wine_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_wine.png) no-repeat center center;" sitr_tip="{6}"></th>\n    <th class="marble_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_marble.png) no-repeat center center;" sitr_tip="{7}"></th>\n    <th class="glass_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_glass.png) no-repeat center center;" sitr_tip="{8}"></th>\n    <th class="sulfur_header cs2 lf" colspan="2" style="background: \n    url(skin/resources/icon_sulfur.png) no-repeat center center;" sitr_tip="{9}"></th>\n</tr>\n</thead>'
         var table = '<table class="resources">\n    <thead>{0}</thead>\n    <body>{1}</body>\n    <tfoot>{2}</tfoot>\n</table>';
         var resourceRow = '<tr id="{0}_resource">\n    <td class="city_name">\n        <img>\n        <span class="SITR_clickable"></span><sub></sub></td>\n    <td class="city_info"></td>\n    <td class="sitrap"></td>\n    <td class="sitractions">\n        <table>\n            <td class="transport"></td>\n        </table>\n    </td>\n    <td class="lf population"></td>\n    <td class="lfdash population_growth">\n        <img align=right height=18 hspace=2 vspace=0></td>\n    <td class="lfdash population_happiness"></td>\n    <td class="lf research"></td>\n    <td class="lf gold_income">\n        <span class="More"></span>\n        <span class="More red"></span>\n    </td>\n    {1}\n</tr>\n';
         var resourceCell = '<td class="lf">\n    <img class="safe"/>\n    <span class="current_{0}"></span>\n    <span class="More MoreGoods merchant_{0}" sitr_tip="dynamic resource movement {0}"></span>\n\n    <div class="SITR_Progress progress_{0}" sitr_tip="dynamic resource progress {0}"></div>\n</td>\n<td class="lfdash ">\n    <span class="More income_{0}" sitr_tip="dynamic resource income {0}"></span>\n    <span class="More"></span>\n    <span class="More"></span>\n</td>\n';
@@ -701,7 +757,14 @@ var render = {
     getArmyTable:function () {
         var table = '<table class="resources army">\n    <thead>{0}</thead>\n    <tbody>{1}</tbody>\n    <tfoot>{2}</tfoot>\n</table>';
         var headerRow = '<tr style="height:25px;" class="header_row">\n    <th colspan="2" class="city_name">{0}</th>\n    <th sitr_tip="{1}"\n        style="background: url(skin/resources/icon_actionpoints.png) no-repeat center right;"\n        class="sitrap"></th>\n    <th></th>\n    {2}\n</tr>';
-        var headerCell = '<th sitr_tip="{0}" style="display:none;" colspan="2" \n    class="army_unit_{2} {3}"><a onclick="ajaxHandlerCall(this.href);return false;" href="?view=unitdescription&helpId=9&unitId={4}&position=4&backgroundView=city" style="display:inline-block;width:26px;"><img src="{1}" style="max-width:26px;max-height:26px;" /></a></th>\n\n';
+        var headerCell = '\
+		<th sitr_tip="{0}" style="display:none;" colspan="2" \n    class="army_unit_{2} {3}">\
+			<a  onclick="ajaxHandlerCall(this.href); return false;" \
+				href="?view=unitdescription&helpId=9&unitId={4}&position=4&backgroundView=city" \
+				style="display:inline-block;width:26px;">\
+				<img src="{1}" style="max-width:26px;max-height:26px;" />\
+			</a>\
+		</th>\n\n';
         var bodyRow = '<tr id="{0}_army">\n    <td class="city_name"><img><span class="SITR_clickable"></span><sub></sub></td>\n    <td class="city_info"></td>\n    <td class="sitrap">\n    <td class="sitractions">\n        <table>\n            <td class="deploymentfleet"></td>\n            <td class="deploymentarmy"></td>\n        </table>\n    </td>\n    {1}\n</tr>';
         var bodyCell = '<td style="display:none;" class="army_unit_{0} {1}">\n    <span></span>\n</td>\n<td style="display:none;" class="army_unit_{0} nolf">\n    <span class="More Green {0}" sitr_tip="dynamic army training {0}"></span>\n    <span class="More Blue {0}" sitr_tip="dynamic army movement {0}"></span>\n</td>';
         var footerRow = '<tr style="height:25px;" class="totals_row">\n    <td class="city_name"></td>\n    <td colspan="2" class="sigma">S</td>\n    <td></td>\n    {0}\n</tr>';
@@ -757,7 +820,22 @@ var render = {
     },
     getBuildingTable:function () {
         var table = '<table class="resources buildings">\n    <thead>{0}</thead>\n    <tbody>{1}</tbody>\n</table>';
-        var headerCell = '<th sitr_tip="{0}" style="background-color: transparent; background-image: url(\'{1}\'); \nbackground-repeat: no-repeat; background-attachment: scroll; background-position: center center; background-clip: \nborder-box; background-origin: padding-box; background-size: 60px 60px;" colspan="{2}" class="{3}" onclick="ajaxHandlerCall(\'?view=buildingDetail&buildingId={4}&helpId=1\');return false;">&nbsp;</th>';
+        var headerCell = '\
+			<th sitr_tip="{0}" \
+				style=" background-color: transparent; \
+						background-image: url(\'{1}\'); \
+						background-repeat: no-repeat; \
+						background-attachment: scroll; \
+						background-position: center center;\
+						background-clip: \
+						border-box; \
+						background-origin: padding-box; \
+						background-size: 60px 60px;"\
+				colspan="{2}" \
+				class="{3}" \
+				onclick="ajaxHandlerCall(\'?view=buildingDetail&buildingId={4}&helpId=1\');return false;">\
+				&nbsp;\
+			</th>';
         var headerRow = '<tr style="height:25px;" class="header_row">\n    <th colspan="2" class="city_name">{0}</th>\n    <th sitr_tip="{1}"\n        style="background: url(skin/resources/icon_actionpoints.png) no-repeat center right;"\n        class="sitrap"></th>\n    <th></th>\n    {2}\n</tr>'
         var buildingCell = '<td class="{0} building"><a></a></td>';
         var buildingRow = '<tr id="{0}_buildings">\n    <td class="city_name"><img><span class="SITR_clickable"></span><sub></sub></td>\n    <td class="city_info"></td>\n    <td class="sitrap">\n    <td class="sitractions">\n        <table>\n            <td class="transport"></td>\n        </table>\n    </td>\n    {1}\n</tr>';
@@ -1635,7 +1713,23 @@ var render = {
     setResearchData : function (city) {
         var total = Math.floor(city.research.getResearch)
         var rows = ''
-        var tooltip = '<div align="center" style="background:none repeat scroll 0 0 rgba(248, 231, 179, 0.92);">\n    <img src="skin/layout/bulb-on.png" style="height: 15px; float: left">\n    <b>Research</b>\n</div>\n<table>\n    {0}\n    <tfoot>\n    <tr style="border-top:3px solid #FDF7DD">\n        <td><b>S</b></td>\n        <td class="nolf">{1}</td>\n        <td class="left lfdash">«Total</td>\n    </tr>\n    </tfoot>\n</table>'
+        var tooltip = '\
+		<div align="center" \
+			 style="background:none repeat scroll 0 0 rgba(248, 231, 179, 0.92);">\
+			 <img src="skin/layout/bulb-on.png" style="height: 15px; float: left">\n  \
+			 <b>Research</b>\n\
+		</div>\n\
+		<table>\n    {0}\n  \
+			<tfoot>\n    \
+				<tr style="border-top:3px solid #FDF7DD">\n      \
+					<td><b>S</b></td>\n       \
+					<td class="nolf">{1}</td>\n    \
+					<td class="left lfdash">\
+						«Total\
+					</td>\n   \
+				</tr>\n  \
+			</tfoot>\n\
+		</table>'
         var tr = '<tr>\n    <td class="nolf">+</td>\n    <td class="nolf">{0}</td>\n    <td class="left lfdash">«{1}</td>\n</tr>'
         if (database.getGlobalData.getGovernmentType == Constant.Government.DEMOCRACY){
             rows = Utils.format(tr,[total - city.getCulturalGoods +'('+city.research.getResearchers+')','Scientists']) + Utils.format(tr, [city.getCulturalGoods,'Cultural'])
@@ -1984,8 +2078,8 @@ var ikariam = {
                 len--;
                 switch (response[len][0]) {
                     case 'updateGlobalData':
-                        this._currentCity = parseInt(response[len][1][11].id);
-                        var cityData = $.extend({}, response[len][1][11], response[len][1][10]);
+                        this._currentCity = parseInt(response[len][1]["backgroundData"].id);
+                        var cityData = $.extend({}, response[len][1]["backgroundData"], response[len][1]["headerData"]);
                         events('updateBuildingData').pub(this.CurrentCityId, cityData.position);
                         events('updateCityData').pub(this.CurrentCityId, $.extend({}, cityData));
                         break;
@@ -2004,8 +2098,8 @@ var ikariam = {
                     case 'updateBackgroundData':
                         oldCity = this.CurrentCityId
                         this._currentCity = parseInt(response[len][1].id);
-                        events('updateBuildingData').pub(response[len][1].id, response[len][1].position);
-                        events('updateCityData').pub(response[len][1].id, $.extend(true, {}, unsafeWindow.dataSetForView, response[len][1]));
+                        events('updateBuildingData').pub(this._currentCity, response[len][1].position);
+                        events('updateCityData').pub(this._currentCity, $.extend(true, {}, unsafeWindow.dataSetForView, response[len][1]));
                         break;
                 }
             }
@@ -2313,7 +2407,7 @@ var ikariam = {
         database.getGlobalData.finance.fleetCost = parseInt($breakdown[1].textContent.split(database.getGlobalData.getLocalisedString('thousandSeperator')).join(''));
         database.getGlobalData.finance.armySupply = parseInt($breakdown[2].textContent.split(database.getGlobalData.getLocalisedString('thousandSeperator')).join(''));
         database.getGlobalData.finance.fleetSupply = parseInt($breakdown[3].textContent.split(database.getGlobalData.getLocalisedString('thousandSeperator')).join(''));
-        events('globalData').pub({finances:true});
+        events('globalData').pub({finances:true})
     },
     parseResearchAdvisor:function (data) {
         var changes = [];
@@ -3272,8 +3366,8 @@ function tradeGoodFromID(id) {
             return 6 - ((database.getGlobalData.getGovernmentType == Constant.Government.TECHNOCRACY) * -1) - (database.getGlobalData.getResearchTopicLevel(Constant.Research.Science.LETTER_CHUTE) * 3)
         },
         get getResearchCost() {
-			return this.getResearchers * this._researchCostModifier;
-            // return this._researchCost;
+			// return this.getResearchers * this._researchCostModifier;
+            return this._researchCost;
         }
     }
 
@@ -3671,7 +3765,6 @@ Population.prototype = {
                     total += r[n];
                 }
             }
-			
             r.total = total;
             return r
         },
@@ -3695,7 +3788,7 @@ Population.prototype = {
             corruption += (1 - (govLevel + 1) / (Object.keys(database.cities).length)) + ((database.getGlobalData.getGovernmentType == Constant.Government.ARISTOCRACY || database.getGlobalData.getGovernmentType == Constant.Government.OLIGARCHY) ? 0.03 : database.getGlobalData.getGovernmentType == Constant.Government.ANARCHY ? 0.25 : 0);
             corruption = (corruption < 0) ? 0 : corruption;
             var happiness = (1 - corruption) * plus.total - this._population;
-         	var hours = (($.now() - this._lastPopUpdate) / 3600000);
+            var hours = (($.now() - this._lastPopUpdate) / 3600000);
             var pop = this._population + happiness * (1 - Math.pow(Math.E, -(hours / 50)));
             pop = (pop > maxPopulation) ? maxPopulation : pop;
             happiness = (1 - corruption) * plus.total - pop;
@@ -3912,6 +4005,7 @@ var Constant = {
         313: 'archer',
         315: 'spearman',
         316: 'barbarian',
+
         210: 'ship_ram',
         211: 'ship_flamethrower',
         212: 'ship_submarine',
@@ -4172,7 +4266,7 @@ var Constant = {
             icon:'skin/img/city/port_l.png'
         },
         safehouse:{
-			buildingId:1,
+			buildingId:16,
             maxLevel:32,
             wood:[113, 248, 402, 578, 779, 1007, 1267, 1564, 1903, 2288, 2728, 3230, 3801, 4453, 5195, 6042, 7008, 8108, 9363, 10793, 12423, 14282, 16401, 18816, 21570, 24709, 28288, 32368, 37019, 42321, 48365, 55255],
             glass:0,
